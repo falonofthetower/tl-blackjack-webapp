@@ -1,0 +1,9 @@
+<% if flash[:notice] %>
+	<div class="alert"><%= flash[:notice] %></div>
+<% end %>
+
+How much will you bet?
+<form action="/bet_form" method="post">
+	<input type="text" name="bet">
+	<input type="submit">
+</form>

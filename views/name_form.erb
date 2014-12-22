@@ -1,0 +1,9 @@
+<% if flash[:notice] %>
+	<div class="alert"><%= flash[:notice] %></div>
+<% end %>
+
+What is your name?
+<form action="/name_form" method="post">
+	<input type="text" name="name">
+	<input type="submit">
+</form>

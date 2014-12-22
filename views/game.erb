@@ -1,0 +1,24 @@
+<h1>Welcome to Blackjack</h1>
+<% if flash[:notice] %>
+	<div class="alert"><%= flash[:notice] %></div>
+<% end %>
+<p>Dealer holds:
+<ul>
+	<% session[:dealer_hand].each do |card| %>
+		<li><%= card.to_s %></li>
+	<% end %>
+</ul>
+
+<%= session[:name] %> holds:
+<ul>
+	<% session[:player_hand].each do |card| %>
+		<li><%= card.to_s %></li>
+	<% end %>
+</ul>
+
+<a class="btn" href="/hit">Hit</a>
+<a class="btn" href="/stay">Stay</a>
+
+<% if session[:msg] %>
+	<%= session[:msg] %>
+<% end %>
