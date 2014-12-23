@@ -6,26 +6,32 @@ require 'rack-flash'
 set :sessions, true
 use Rack::Flash
 
-get '/' do  
-  if session[:name]
-    redirect '/game'
-  else
-    redirect '/name_form'
-  end    
-end
-
-get '/name_form' do
-  erb :name_form
-end
-
-post '/name_form' do
-  if params[:name] == ''
-    flash[:notice] = "You must enter a name"
-    redirect '/'
-  else
-    session[:name] = params[:name]
+def image_helper(card)
+  image_string = ""
+  case card[0]
+  when "C"
+    image_string << "clubs_"
+  when "S"
+    image_string << "spades_"
+  when "D"
+    image_string << "diamonds_"
+  when "H"
+    image_string << "hearts_"    
   end
-  redirect '/game'  
+
+  case card[1]
+  when "A"
+    image_string << "ace"
+  when "K"
+    image_string << "king"
+  when "J"
+    image_string << "jack"
+  when "Q"
+    image_string << "queen"
+  else 
+    image_string << card[1]
+  end
+  image_string << ".jpg"
 end
 
 def start_game
@@ -42,29 +48,36 @@ def start_game
   session[:player_hand] << session[:deck].pop
   session[:dealer_hand] << session[:deck].pop
   session[:player_hand] << session[:deck].pop
-  session[:dealer_hand] << session[:deck].pop  
+  session[:dealer_hand] << session[:deck].pop   
 end
 
 def calculate_total(hand)
   total = 0
-  aces = 0
+  
   count = hand.map { |each| each[1] }
-  count.each do |value|
-    if value == 'A'
-      total += 11
-      aces += 1
-    elsif value.to_i == 0
-      total += 10    
-    else
-      total += value.to_i      
-    end
 
-    while total > 21 && aces > 0
-      total += -10
-      aces += -1
-    end    
+  count.each do |value|
+    if value == "A"
+      total += 11
+    else
+      total += value.to_i == 0 ? 10 : value.to_i
+    end
   end
+
+  count.select{|each| each == "A"}.count.times do
+    break if total <= 21
+    total -= 10
+  end
+
   total
+end
+
+def bust?(hand)
+  calculate_total(hand) > 21
+end
+
+def blackjack?(hand)
+  calculate_total(hand) == 21 && hand.count == 2
 end
 
 def dealer_turn
@@ -82,27 +95,38 @@ def calculate_winner
   session[:game_over] = true
 end
 
+get '/' do
+  session.clear    
+  erb :name_form
+end
+
 get '/game' do  
-  if session[:dealer_done]
-    "calculate_winner"
-    
-  end
-  start_game unless session[:game_active]
-  erb :game  
+  redirect '/' if !session[:name]
+  start_game
+  erb :game    
 end
 
-get '/new_game' do
-  session.clear
-  redirect '/'
+post '/game/player/hit' do    
+  session[:player_hand] << session[:deck].pop  
+  if bust? session[:player_hand]
+    session[:player_done] = true
+    @error = "Sorry you have busted"
+  end  
+  erb :game
 end
 
-get '/hit' do
-  session[:player_hand] << session[:deck].pop
-  redirect '/game'
-end
-
-get '/stay' do
+post '/game/player/stay' do
   session[:player_done] = true
-  flash[:notice] = "player done"
-  redirect '/game'
+  @message = "You have stayed"
+  erb :game
+end
+
+post '/name_form' do
+  if params[:name] == ''
+    @error = "You must enter a name"
+    erb :name_form
+  else
+    session[:name] = params[:name]
+    redirect '/game'
+  end    
 end

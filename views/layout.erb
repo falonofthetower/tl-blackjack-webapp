@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>My First App</title>
+    <title>Blackjack!</title>
     <link rel="stylesheet" href="/vendor/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="/application.css">
   </head>
@@ -11,7 +11,8 @@
       <div class="navbar-inner">
         <div class="container">
             <ul class="nav">
-              <li><a href="/new_game">New Game</a></li>
+              <li><a href="/">New Player</a></li>
+              <li><a href="/game">New Game</a></li>
               <li><a href="/settings">Settings</a></li>
             </ul>
         </div>
@@ -21,6 +22,12 @@
   <div class="container">
     <%if @error %>
       <div class="alert alert-error"><%=@error%></div>
+    <% end %>
+    <%if @message %>
+      <div class="alert alert-info"><%=@message%></div>
+    <% end %>
+    <%if @success %>
+      <div class="alert alert-success"><%=@success%></div>
     <% end %>
       <%= yield %>
   </div>
