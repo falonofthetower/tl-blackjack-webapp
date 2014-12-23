@@ -2,9 +2,8 @@ require 'pry'
 require 'rubygems'
 require 'sinatra'
 require 'shotgun'
-require 'rack-flash'
+
 set :sessions, true
-use Rack::Flash
 
 def image_helper(card)
   image_string = ""
