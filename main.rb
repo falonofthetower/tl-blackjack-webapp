@@ -5,6 +5,10 @@ require 'shotgun'
 
 set :sessions, true
 
+before do
+  @show_hit_or_stay_buttons = true
+end
+
 def image_helper(card)
   image_string = ""
   case card[0]
@@ -34,15 +38,13 @@ def image_helper(card)
 end
 
 def start_game
-  session[:game_active] = true
+
   session[:bet] = 0
   session[:cash] = 0
   session[:player_hand] = []
-  session[:player_done] = false
-  session[:dealer_hand] = []
-  session[:dealer_done] = false
+  session[:dealer_hand] = []  
   suits = ['H', 'D', 'S', 'C']
-  face = ['2','3','4','5','6','7','8','9','T','J','Q','K','A']
+  face = ['2','3','4','5','6','7','8','9','10','J','Q','K','A']
   session[:deck] = suits.product(face).shuffle!  
   session[:player_hand] << session[:deck].pop
   session[:dealer_hand] << session[:deck].pop
@@ -107,15 +109,16 @@ end
 
 post '/game/player/hit' do    
   session[:player_hand] << session[:deck].pop  
-  if bust? session[:player_hand]
-    session[:player_done] = true
+  if bust? session[:player_hand]    
     @error = "Sorry you have busted"
+    @show_hit_or_stay_buttons = false
   end  
   erb :game
 end
 
 post '/game/player/stay' do
   session[:player_done] = true
+  @show_hit_or_stay_buttons = false
   @message = "You have stayed"
   erb :game
 end

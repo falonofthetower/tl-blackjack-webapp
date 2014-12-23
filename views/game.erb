@@ -15,4 +15,4 @@
 		<li>Total Score: <%= calculate_total(session[:player_hand]).to_s %></li>
 </ul>
 
-<%= erb :hit_stay_buttons unless session[:player_done] %>
+<%= erb :hit_stay_buttons if @show_hit_or_stay_buttons %>
