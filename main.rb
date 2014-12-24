@@ -10,22 +10,27 @@ before do
 end
 
 def image_helper(card)  
-  suit = case card[0]
-  when "C" then "clubs"
-  when "S" then "spades"
-  when "D" then "diamonds"
-  when "H" then "hearts"    
-  end
+  if card == "cover"
+    "<img src='/images/cards/cover.jpg' class='card_image'>"
+  else
 
-  value = case card[1]
-  when "A" then "ace"
-  when "K" then "king"
-  when "J" then "jack"
-  when "Q" then "queen"
-  else card[1]
-  end
+    suit = case card[0]
+    when "C" then "clubs"
+    when "S" then "spades"
+    when "D" then "diamonds"
+    when "H" then "hearts"    
+    end
+
+    value = case card[1]
+    when "A" then "ace"
+    when "K" then "king"
+    when "J" then "jack"
+    when "Q" then "queen"
+    else card[1]
+    end
   
-  "<img src='/images/cards/#{suit}_#{value}.jpg' class='card_image'>"
+    "<img src='/images/cards/#{suit}_#{value}.jpg' class='card_image'>"
+  end
 end
 
 def start_game
@@ -102,7 +107,7 @@ post '/game/player/hit' do
   if bust? session[:player_hand]    
     @error = "Sorry you have busted"
     @show_hit_or_stay_buttons = false
-    @show_dealer_button = true
+    @show_dealer_items = true    
   end  
   erb :game
 end
@@ -112,22 +117,28 @@ post '/game/player/stay' do
   @show_hit_or_stay_buttons = false
   @message = "#{session[:name]} has stayed"
   @show_hit_or_stay_buttons = false
-  @show_dealer_button = true
+  @show_dealer_items = true
   erb :game
 end
 
 post '/game/dealer/continue' do
   @message = "Dealer holds blackjack!" if blackjack? session[:dealer_hand]  
-  session[:dealer_hand] << session[:deck].pop if calculate_total(session[:dealer_hand]) < 17
+  if calculate_total(session[:dealer_hand]) < 17
+    session[:dealer_hand] << session[:deck].pop 
+  else
+    redirect '/game/comparison'    
+  end
   @message = "Dealer has busted!" if bust? session[:dealer_hand]
+  redirect '/game/comparison' if calculate_total(session[:dealer_hand]) > 16
   @show_hit_or_stay_buttons = false
-  @show_dealer_button = true
+  @show_dealer_items = true
+  @show_dealer_card = true
   erb :game
 end
 
 get 'game/dealer' do
   @show_hit_or_stay_buttons = false
-  @show_dealer_button = true
+  @show_dealer_items = true
   erb :game
 end
 
@@ -139,4 +150,32 @@ post '/name_form' do
     session[:name] = params[:name]
     redirect '/game'
   end    
+end
+
+get '/game/comparison' do
+  dealer_total = calculate_total(session[:dealer_hand])
+  player_total = calculate_total(session[:player_hand])
+  if player_total > 21
+    @error = "#{session[:name]} busts!"
+  elsif (blackjack?(session[:player_hand]) && blackjack?(dealer)) || player_total == dealer_total
+    #player[:chips] += player[:bet]
+    @message = "Push"
+  elsif blackjack?(session[:dealer_hand])
+    @error = "Dealer BlackJack!"  
+  elsif blackjack?(session[:player_hand])
+    #player[:chips] += player[:bet] * 2.5
+    @success = "#{session[:name]} BlackJack's!"
+  elsif player_total > dealer_total
+    #player[:chips] += player[:bet] * 2
+    @success = "#{session[:name]} Wins!"
+  elsif dealer_total > 21
+    #player[:chips] += player[:bet] * 2
+    @success = "Dealer Busts! #{session[:name]} wins!"
+  elsif dealer_total > player_total
+    @error = "Dealer wins. #{session[:name]} loses!"
+  end
+  @show_hit_or_stay_buttons = false
+  @show_play_again_button = true
+  @show_dealer_card = true
+  erb :game
 end
