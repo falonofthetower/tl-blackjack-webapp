@@ -107,7 +107,8 @@ post '/game/player/hit' do
   if bust? session[:player_hand]    
     @error = "Sorry you have busted"
     @show_hit_or_stay_buttons = false
-    @show_dealer_items = true    
+    @show_dealer_items = true
+    redirect '/game/comparison'
   end  
   erb :game
 end
