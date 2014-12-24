@@ -1,3 +1,6 @@
+* {
+	font-family: Arial black
+}
 form#hit_form {
 	float: left;
 	margin-right: 10px;
@@ -11,4 +14,8 @@ img.card_image {
 	margin: 0px 7px 0px 7px;
 	width: 120;
 	height: 174;
+	border: 2px solid gray;
+	border-radius: 5px;
+	padding: 5px 5px 5px 5px;
+	background-color: white;
 }
