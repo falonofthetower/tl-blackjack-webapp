@@ -5,6 +5,9 @@ require 'shotgun'
 
 set :sessions, true
 
+DEALER_HIT_VALUE = 17
+BLACKJACK_VALUE = 21
+
 before do
   @show_hit_or_stay_buttons = true  
 end
@@ -61,7 +64,7 @@ def calculate_total(hand)
   end
 
   count.select{|each| each == "A"}.count.times do
-    break if total <= 21
+    break if total <= BLACKJACK_VALUE
     total -= 10
   end
 
@@ -69,11 +72,11 @@ def calculate_total(hand)
 end
 
 def bust?(hand)
-  calculate_total(hand) > 21
+  calculate_total(hand) > BLACKJACK_VALUE
 end
 
-def blackjack?(hand)
-  calculate_total(hand) == 21 && hand.count == 2
+def BLACKJACK_VALUE?(hand)
+  calculate_total(hand) == BLACKJACK_VALUE && hand.count == 2
 end
 
 def dealer_turn
@@ -99,7 +102,7 @@ end
 get '/game' do  
   redirect '/' if !session[:name]
   start_game
-  @message = "#{session[:name]}, welcome to BlackJack"
+  @message = "#{session[:name]}, welcome to BLACKJACK_VALUE"
   erb :game    
 end
 
@@ -125,8 +128,8 @@ post '/game/player/stay' do
 end
 
 post '/game/dealer/continue' do
-  @message = "Dealer holds blackjack!" if blackjack? session[:dealer_hand]  
-  if calculate_total(session[:dealer_hand]) < 17
+  @message = "Dealer holds BLACKJACK_VALUE!" if BLACKJACK_VALUE? session[:dealer_hand]  
+  if calculate_total(session[:dealer_hand]) < DEALER_HIT_VALUE_VALUE
     session[:dealer_hand] << session[:deck].pop 
     @message = "Dealer takes a card"
   else
@@ -155,20 +158,20 @@ end
 get '/game/comparison' do
   dealer_total = calculate_total(session[:dealer_hand])
   player_total = calculate_total(session[:player_hand])
-  if player_total > 21
+  if player_total > BLACKJACK_VALUE
     @error = "#{session[:name]} busts!"
-  elsif (blackjack?(session[:player_hand]) && blackjack?(session[:dealer_hand])) || player_total == dealer_total
+  elsif (BLACKJACK_VALUE?(session[:player_hand]) && BLACKJACK_VALUE?(session[:dealer_hand])) || player_total == dealer_total
     #player[:chips] += player[:bet]
     @message = "Push"
-  elsif blackjack?(session[:dealer_hand])
-    @error = "Dealer BlackJack!"  
-  elsif blackjack?(session[:player_hand])
+  elsif BLACKJACK_VALUE?(session[:dealer_hand])
+    @error = "Dealer BLACKJACK_VALUE!"  
+  elsif BLACKJACK_VALUE?(session[:player_hand])
     #player[:chips] += player[:bet] * 2.5
-    @success = "#{session[:name]} BlackJack's!"
+    @success = "#{session[:name]} BLACKJACK_VALUE's!"
   elsif player_total > dealer_total
     #player[:chips] += player[:bet] * 2
     @success = "#{session[:name]} Wins!"
-  elsif dealer_total > 21
+  elsif dealer_total > BLACKJACK_VALUE
     #player[:chips] += player[:bet] * 2
     @success = "Dealer Busts! #{session[:name]} wins!"
   elsif dealer_total > player_total
