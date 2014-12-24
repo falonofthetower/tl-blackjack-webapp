@@ -137,12 +137,6 @@ post '/game/dealer/continue' do
   erb :game
 end
 
-get 'game/dealer' do
-  @show_hit_or_stay_buttons = false
-  @show_dealer_items = true
-  erb :game
-end
-
 post '/name_form' do
   if params[:name] == ''
     @error = "You must enter a name"
