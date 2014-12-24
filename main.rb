@@ -99,6 +99,7 @@ end
 get '/game' do  
   redirect '/' if !session[:name]
   start_game
+  @message = "#{session[:name]}, welcome to BlackJack"
   erb :game    
 end
 
@@ -109,7 +110,8 @@ post '/game/player/hit' do
     @show_hit_or_stay_buttons = false
     @show_dealer_items = true
     redirect '/game/comparison'
-  end  
+  end
+  @message = "#{session[:name]}, hits" unless @error 
   erb :game
 end
 
@@ -126,6 +128,7 @@ post '/game/dealer/continue' do
   @message = "Dealer holds blackjack!" if blackjack? session[:dealer_hand]  
   if calculate_total(session[:dealer_hand]) < 17
     session[:dealer_hand] << session[:deck].pop 
+    @message = "Dealer takes a card"
   else
     redirect '/game/comparison'    
   end
@@ -134,6 +137,8 @@ post '/game/dealer/continue' do
   @show_hit_or_stay_buttons = false
   @show_dealer_items = true
   @show_dealer_card = true
+  @message = "Now the dealer plays" unless @message
+
   erb :game
 end
 
