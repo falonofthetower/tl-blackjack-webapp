@@ -75,7 +75,7 @@ def bust?(hand)
   calculate_total(hand) > BLACKJACK_VALUE
 end
 
-def BLACKJACK_VALUE?(hand)
+def blackjack?(hand)
   calculate_total(hand) == BLACKJACK_VALUE && hand.count == 2
 end
 
@@ -100,18 +100,18 @@ get '/' do
 end
 
 get '/game' do  
-  redirect '/' if !session[:name]
+  redirect '/' if !session[:name]  
   start_game
-  @message = "#{session[:name]}, welcome to BLACKJACK_VALUE"
+  session[:turn] = "player"
+  @message = "#{session[:name]}, welcome to Blackjack"  
   erb :game    
 end
 
 post '/game/player/hit' do    
   session[:player_hand] << session[:deck].pop  
   if bust? session[:player_hand]    
-    @error = "Sorry you have busted"
-    @show_hit_or_stay_buttons = false
-    @show_dealer_items = true
+    @error = "Sorry you have busted"    
+    session[:turn] = "dealer"
     redirect '/game/comparison'
   end
   @message = "#{session[:name]}, hits" unless @error 
@@ -121,25 +121,21 @@ end
 post '/game/player/stay' do
   session[:player_done] = true
   @show_hit_or_stay_buttons = false
-  @message = "#{session[:name]} has stayed"
-  @show_hit_or_stay_buttons = false
-  @show_dealer_items = true
+  @message = "#{session[:name]} has stayed"  
+  session[:turn] = "dealer"
   erb :game
 end
 
 post '/game/dealer/continue' do
-  @message = "Dealer holds BLACKJACK_VALUE!" if BLACKJACK_VALUE? session[:dealer_hand]  
-  if calculate_total(session[:dealer_hand]) < DEALER_HIT_VALUE_VALUE
+  @message = "Dealer holds BLACKJACK_VALUE!" if blackjack? session[:dealer_hand]  
+  if calculate_total(session[:dealer_hand]) < DEALER_HIT_VALUE
     session[:dealer_hand] << session[:deck].pop 
     @message = "Dealer takes a card"
   else
     redirect '/game/comparison'    
   end
   @message = "Dealer has busted!" if bust? session[:dealer_hand]
-  redirect '/game/comparison' if calculate_total(session[:dealer_hand]) > 16
-  @show_hit_or_stay_buttons = false
-  @show_dealer_items = true
-  @show_dealer_card = true
+  redirect '/game/comparison' if calculate_total(session[:dealer_hand]) > 16    
   @message = "Now the dealer plays" unless @message
 
   erb :game
@@ -160,14 +156,14 @@ get '/game/comparison' do
   player_total = calculate_total(session[:player_hand])
   if player_total > BLACKJACK_VALUE
     @error = "#{session[:name]} busts!"
-  elsif (BLACKJACK_VALUE?(session[:player_hand]) && BLACKJACK_VALUE?(session[:dealer_hand])) || player_total == dealer_total
+  elsif (blackjack?(session[:player_hand]) && blackjack?(session[:dealer_hand])) || player_total == dealer_total
     #player[:chips] += player[:bet]
     @message = "Push"
-  elsif BLACKJACK_VALUE?(session[:dealer_hand])
-    @error = "Dealer BLACKJACK_VALUE!"  
-  elsif BLACKJACK_VALUE?(session[:player_hand])
+  elsif blackjack?(session[:dealer_hand])
+    @error = "Dealer Blackjack!"  
+  elsif blackjack?(session[:player_hand])
     #player[:chips] += player[:bet] * 2.5
-    @success = "#{session[:name]} BLACKJACK_VALUE's!"
+    @success = "#{session[:name]} Blackjack's!"
   elsif player_total > dealer_total
     #player[:chips] += player[:bet] * 2
     @success = "#{session[:name]} Wins!"
@@ -177,8 +173,6 @@ get '/game/comparison' do
   elsif dealer_total > player_total
     @error = "Dealer wins. #{session[:name]} loses!"
   end
-  @show_hit_or_stay_buttons = false
-  @show_play_again_button = true
-  @show_dealer_card = true
+  session[:turn] = "nil"  
   erb :game
 end
