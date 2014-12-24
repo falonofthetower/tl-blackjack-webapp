@@ -158,7 +158,7 @@ get '/game/comparison' do
   player_total = calculate_total(session[:player_hand])
   if player_total > 21
     @error = "#{session[:name]} busts!"
-  elsif (blackjack?(session[:player_hand]) && blackjack?(dealer)) || player_total == dealer_total
+  elsif (blackjack?(session[:player_hand]) && blackjack?(session[:dealer_hand])) || player_total == dealer_total
     #player[:chips] += player[:bet]
     @message = "Push"
   elsif blackjack?(session[:dealer_hand])
