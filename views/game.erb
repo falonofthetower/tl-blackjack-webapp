@@ -1,18 +1,19 @@
 <h1>Welcome to Blackjack</h1>
 <p>Dealer holds:
-<ul>
+<div class="well">
 	<% session[:dealer_hand].each do |card| %>
-		<img src="/images/cards/<%= image_helper card %>">
+		<%= image_helper card %>
 	<% end %>
-	<li>Total Score: <%= calculate_total(session[:dealer_hand]).to_s %></li>
-</ul>
+	Total Score: <%= calculate_total(session[:dealer_hand]).to_s %>	
+</div>
 
 <%= session[:name] %> holds:
-<ul>
-	<% session[:player_hand].each do |card| %>
-		<img src="/images/cards/<%= image_helper card %>">
-	<% end %>
-		<li>Total Score: <%= calculate_total(session[:player_hand]).to_s %></li>
-</ul>
-
+<div class="well">
+	
+		<% session[:player_hand].each do |card| %>
+			<%= image_helper card %>
+		<% end %>
+		Total Score: <%= calculate_total(session[:player_hand]).to_s %>
+</div>
 <%= erb :hit_stay_buttons if @show_hit_or_stay_buttons %>
+<%= erb :show_dealer_button if @show_dealer_button %>

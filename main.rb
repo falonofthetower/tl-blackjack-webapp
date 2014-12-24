@@ -6,39 +6,29 @@ require 'shotgun'
 set :sessions, true
 
 before do
-  @show_hit_or_stay_buttons = true
+  @show_hit_or_stay_buttons = true  
 end
 
-def image_helper(card)
-  image_string = ""
-  case card[0]
-  when "C"
-    image_string << "clubs_"
-  when "S"
-    image_string << "spades_"
-  when "D"
-    image_string << "diamonds_"
-  when "H"
-    image_string << "hearts_"    
+def image_helper(card)  
+  suit = case card[0]
+  when "C" then "clubs"
+  when "S" then "spades"
+  when "D" then "diamonds"
+  when "H" then "hearts"    
   end
 
-  case card[1]
-  when "A"
-    image_string << "ace"
-  when "K"
-    image_string << "king"
-  when "J"
-    image_string << "jack"
-  when "Q"
-    image_string << "queen"
-  else 
-    image_string << card[1]
+  value = case card[1]
+  when "A" then "ace"
+  when "K" then "king"
+  when "J" then "jack"
+  when "Q" then "queen"
+  else card[1]
   end
-  image_string << ".jpg"
+  
+  "<img src='/images/cards/#{suit}_#{value}.jpg' class='card_image'>"
 end
 
 def start_game
-
   session[:bet] = 0
   session[:cash] = 0
   session[:player_hand] = []
@@ -112,6 +102,7 @@ post '/game/player/hit' do
   if bust? session[:player_hand]    
     @error = "Sorry you have busted"
     @show_hit_or_stay_buttons = false
+    @show_dealer_button = true
   end  
   erb :game
 end
@@ -119,7 +110,24 @@ end
 post '/game/player/stay' do
   session[:player_done] = true
   @show_hit_or_stay_buttons = false
-  @message = "You have stayed"
+  @message = "#{session[:name]} has stayed"
+  @show_hit_or_stay_buttons = false
+  @show_dealer_button = true
+  erb :game
+end
+
+post '/game/dealer/continue' do
+  @message = "Dealer holds blackjack!" if blackjack? session[:dealer_hand]  
+  session[:dealer_hand] << session[:deck].pop if calculate_total(session[:dealer_hand]) < 17
+  @message = "Dealer has busted!" if bust? session[:dealer_hand]
+  @show_hit_or_stay_buttons = false
+  @show_dealer_button = true
+  erb :game
+end
+
+get 'game/dealer' do
+  @show_hit_or_stay_buttons = false
+  @show_dealer_button = true
   erb :game
 end
 
