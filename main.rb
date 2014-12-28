@@ -37,8 +37,8 @@ def image_helper(card)
 end
 
 def start_game
-  session[:bet] = 0
-  session[:cash] = 0
+ #session[:bet] = 0
+ #session[:cash] = 0
   session[:player_hand] = []
   session[:dealer_hand] = []  
   suits = ['H', 'D', 'S', 'C']
@@ -94,10 +94,31 @@ def calculate_winner
   session[:game_over] = true
 end
 
-get '/' do
-  session.clear    
+def bet_made?
+  session[:bet] != 0
+end
+
+before /^(?!\/(name_form))/ do
+  redirect '/name_form' unless session[:name]
+end
+
+before /^(?!\/(bet_form|name_form))/ do
+  redirect '/bet_form' unless session[:bet]
+end   
+
+get '/' do  
+end
+
+get '/name_form' do
+  session.clear
+  session[:cash] = 500
   erb :name_form
 end
+
+get '/bet_form' do
+  erb :bet_form
+end
+
 
 get '/game' do  
   redirect '/' if !session[:name]  
@@ -147,8 +168,23 @@ post '/name_form' do
     erb :name_form
   else
     session[:name] = params[:name]
-    redirect '/game'
+    session[:cash]
+    redirect '/bet_form'
   end    
+end
+
+post '/bet_form' do
+  if params[:bet].to_i == 0
+    @error = "You must bet something!"
+    erb :bet_form 
+  elsif params[:bet].to_i > session[:cash]
+    @error = "You don't have that much to bet"
+    erb :bet_form
+  else
+    session[:bet] = params[:bet].to_i
+    session[:cash] -= session[:bet]
+    redirect '/game'
+  end
 end
 
 get '/game/comparison' do
@@ -157,22 +193,24 @@ get '/game/comparison' do
   if player_total > BLACKJACK_VALUE
     @error = "#{session[:name]} busts!"
   elsif (blackjack?(session[:player_hand]) && blackjack?(session[:dealer_hand])) || player_total == dealer_total
-    #player[:chips] += player[:bet]
+    session[:cash] += session[:bet]
     @message = "Push"
   elsif blackjack?(session[:dealer_hand])
     @error = "Dealer Blackjack!"  
   elsif blackjack?(session[:player_hand])
-    #player[:chips] += player[:bet] * 2.5
+    session[:cash] += session[:bet] * 2.5
     @success = "#{session[:name]} Blackjack's!"
   elsif player_total > dealer_total
-    #player[:chips] += player[:bet] * 2
+    session[:cash] += session[:bet] * 2
     @success = "#{session[:name]} Wins!"
   elsif dealer_total > BLACKJACK_VALUE
-    #player[:chips] += player[:bet] * 2
+    session[:cash] += session[:bet] * 2
     @success = "Dealer Busts! #{session[:name]} wins!"
   elsif dealer_total > player_total
     @error = "Dealer wins. #{session[:name]} loses!"
   end
-  session[:turn] = "nil"  
+  session[:bet] = 0
+  session[:turn] = "nil"
+  session[:again?] = true
   erb :game
 end

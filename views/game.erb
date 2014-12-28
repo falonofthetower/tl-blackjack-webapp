@@ -1,27 +1,27 @@
 <h1>Welcome to Blackjack</h1>
 
 <% if session[:turn] != "player" %>
-	<% dealer_total = calculate_total(session[:dealer_hand]) %>
+  <% dealer_total = calculate_total(session[:dealer_hand]) %>
 <% else %>
-	<% dealer_total = calculate_total(session[:dealer_hand][1..-1]) %>
+  <% dealer_total = calculate_total(session[:dealer_hand][1..-1]) %>
 <% end %>
 
 <p>Dealer total score: <%= dealer_total %> 
-<div class="well">	
-	<% session[:dealer_hand].each_with_index do |card, i| %>
-		<% if session[:turn] == "player" && i == 0 %>
-			<%= image_helper "cover" %>			
-		<% else %>
-			<%= image_helper card %>			
-	  	<% end %>
-	<% end %>	
+<div class="well">  
+  <% session[:dealer_hand].each_with_index do |card, i| %>
+    <% if session[:turn] == "player" && i == 0 %>
+      <%= image_helper "cover" %>     
+    <% else %>
+      <%= image_helper card %>      
+      <% end %>
+  <% end %> 
 </div>
 
-<%= session[:name] %> holds: Total Score: <%= calculate_total(session[:player_hand]).to_s %>
-<div class="well">	
-		<% session[:player_hand].each do |card| %>
-			<%= image_helper card %>
-		<% end %>		
+<%= session[:name] %> holds: Total Score: <%= calculate_total(session[:player_hand]).to_s %> Cash left: <%= session[:cash].to_s %>
+<div class="well">  
+    <% session[:player_hand].each do |card| %>
+      <%= image_helper card %>
+    <% end %>   
 </div>
 
 <%= erb :hit_stay_buttons if session[:turn] == "player" %>
