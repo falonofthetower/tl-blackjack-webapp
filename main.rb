@@ -106,7 +106,8 @@ before /^(?!\/(bet_form|name_form))/ do
   redirect '/bet_form' unless session[:bet]
 end   
 
-get '/' do  
+get '/' do
+  redirect '/name_form'
 end
 
 get '/name_form' do
