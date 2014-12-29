@@ -8,10 +8,6 @@ set :sessions, true
 DEALER_HIT_VALUE = 17
 BLACKJACK_VALUE = 21
 
-before do
-  @show_hit_or_stay_buttons = true  
-end
-
 def image_helper(card)  
   if card == "cover"
     "<img src='/images/cards/cover.jpg' class='card_image'>"
@@ -39,6 +35,7 @@ end
 def start_game
  #session[:bet] = 0
  #session[:cash] = 0
+  session[:player_turn] = true
   session[:player_hand] = []
   session[:dealer_hand] = []  
   suits = ['H', 'D', 'S', 'C']
@@ -98,13 +95,18 @@ def bet_made?
   session[:bet] != 0
 end
 
+before do
+  @show_hit_or_stay_buttons = true  
+  @show_dealer_continue_button = false
+end
+
 before /^(?!\/(name_form))/ do
   redirect '/name_form' unless session[:name]
 end
 
 before /^(?!\/(bet_form|name_form))/ do
   redirect '/bet_form' unless session[:bet]
-end   
+end
 
 get '/' do
   redirect '/name_form'
@@ -116,53 +118,6 @@ get '/name_form' do
   erb :name_form
 end
 
-get '/bet_form' do
-  erb :bet_form
-end
-
-
-get '/game' do  
-  redirect '/' if !session[:name]  
-  start_game
-  session[:turn] = "player"
-  @message = "#{session[:name]}, welcome to Blackjack"  
-  erb :game    
-end
-
-post '/game/player/hit' do    
-  session[:player_hand] << session[:deck].pop  
-  if bust? session[:player_hand]    
-    @error = "Sorry you have busted"    
-    session[:turn] = "dealer"
-    redirect '/game/comparison'
-  end
-  @message = "#{session[:name]}, hits" unless @error 
-  erb :game
-end
-
-post '/game/player/stay' do
-  session[:player_done] = true
-  @show_hit_or_stay_buttons = false
-  @message = "#{session[:name]} has stayed"  
-  session[:turn] = "dealer"
-  erb :game
-end
-
-post '/game/dealer/continue' do
-  @message = "Dealer holds BLACKJACK_VALUE!" if blackjack? session[:dealer_hand]  
-  if calculate_total(session[:dealer_hand]) < DEALER_HIT_VALUE
-    session[:dealer_hand] << session[:deck].pop 
-    @message = "Dealer takes a card"
-  else
-    redirect '/game/comparison'    
-  end
-  @message = "Dealer has busted!" if bust? session[:dealer_hand]
-  redirect '/game/comparison' if calculate_total(session[:dealer_hand]) > 16    
-  @message = "Now the dealer plays" unless @message
-
-  erb :game
-end
-
 post '/name_form' do
   if params[:name] == ''
     @error = "You must enter a name"
@@ -172,6 +127,10 @@ post '/name_form' do
     session[:cash]
     redirect '/bet_form'
   end    
+end
+
+get '/bet_form' do
+  erb :bet_form
 end
 
 post '/bet_form' do
@@ -188,7 +147,49 @@ post '/bet_form' do
   end
 end
 
+get '/game' do    
+  start_game  
+  @message = "#{session[:name]}, welcome to Blackjack"  
+  erb :game    
+end
+
+post '/game/player/hit' do    
+  session[:player_hand] << session[:deck].pop  
+  if bust? session[:player_hand]    
+    @error = "Sorry you have busted"    
+    @show_hit_or_stay_buttons = false    
+    session[:player_turn] = false
+    redirect '/game/comparison'
+  end
+  @message = "#{session[:name]}, hits" unless @error 
+  erb :game
+end
+
+post '/game/player/stay' do
+  @show_hit_or_stay_buttons = false
+  @show_dealer_continue_button = true
+  session[:player_turn] = false
+  @message = "#{session[:name]} has stayed"  
+  erb :game
+end
+
+post '/game/dealer/continue' do
+  redirect '/game/comparison' if calculate_total(session[:dealer_hand]) > DEALER_HIT_VALUE
+  @show_hit_or_stay_buttons = false
+  @show_dealer_continue_button = true
+  
+  if calculate_total(session[:dealer_hand]) < DEALER_HIT_VALUE
+    session[:dealer_hand] << session[:deck].pop 
+    @message = "Dealer takes a card, his total is now #{calculate_total(session[:dealer_hand])}"
+  else
+    @message = "Dealer reaches #{calculate_total(session[:dealer_hand])}, and stays"
+  end
+  erb :game
+end
+
 get '/game/comparison' do
+  @show_hit_or_stay_buttons = false
+  @show_play_again_button = true
   dealer_total = calculate_total(session[:dealer_hand])
   player_total = calculate_total(session[:player_hand])
   if player_total > BLACKJACK_VALUE
@@ -210,8 +211,6 @@ get '/game/comparison' do
   elsif dealer_total > player_total
     @error = "Dealer wins. #{session[:name]} loses!"
   end
-  session[:bet] = 0
-  session[:turn] = "nil"
-  session[:again?] = true
+  session[:bet] = 0  
   erb :game
 end
