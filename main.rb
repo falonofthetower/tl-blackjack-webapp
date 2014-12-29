@@ -34,25 +34,30 @@ def image_helper(card)
   end
 end
 
-def start_game
- #session[:bet] = 0
- #session[:cash] = 0
-  session[:player_turn] = true
-  session[:player_hand] = []
-  session[:dealer_hand] = []  
+def create_deck
   suits = ['H', 'D', 'S', 'C']
   face = ['2','3','4','5','6','7','8','9','10','J','Q','K','A']
   session[:deck] = suits.product(face).shuffle!  
+end
+
+def deal_initial_hand
   session[:player_hand] << session[:deck].pop
   session[:dealer_hand] << session[:deck].pop
   session[:player_hand] << session[:deck].pop
   session[:dealer_hand] << session[:deck].pop   
 end
 
+
+def reset_game 
+  session[:player_turn] = true
+  session[:player_hand] = []
+  session[:dealer_hand] = []    
+end
+
 def calculate_total(hand)
   total = 0
   
-  count = hand.map { |each| each[1] }
+  count = hand.map { |card| card[1] }
 
   count.each do |value|
     if value == "A"
@@ -62,7 +67,7 @@ def calculate_total(hand)
     end
   end
 
-  count.select{|each| each == "A"}.count.times do
+  count.select{|card| card == "A"}.count.times do
     break if total <= BLACKJACK_VALUE
     total -= 10
   end
@@ -149,8 +154,10 @@ post '/bet_form' do
   end
 end
 
-get '/game' do    
-  start_game  
+get '/game' do 
+  create_deck  
+  reset_game      
+  deal_initial_hand  
   @message = "#{session[:name]}, welcome to Blackjack"  
   erb :game    
 end
