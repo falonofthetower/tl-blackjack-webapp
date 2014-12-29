@@ -134,11 +134,11 @@ get '/bet_form' do
 end
 
 post '/bet_form' do
-  if params[:bet].to_i == 0
+  if params[:bet].to_i <= 0
     @error = "You must bet something!"
     erb :bet_form 
   elsif params[:bet].to_i > session[:cash]
-    @error = "You don't have that much to bet"
+    @error = "You can't bet that amount"
     erb :bet_form
   else
     session[:bet] = params[:bet].to_i
@@ -174,7 +174,7 @@ post '/game/player/stay' do
 end
 
 post '/game/dealer/continue' do
-  redirect '/game/comparison' if calculate_total(session[:dealer_hand]) > DEALER_HIT_VALUE
+  
   @show_hit_or_stay_buttons = false
   @show_dealer_continue_button = true
   
@@ -182,7 +182,8 @@ post '/game/dealer/continue' do
     session[:dealer_hand] << session[:deck].pop 
     @message = "Dealer takes a card, his total is now #{calculate_total(session[:dealer_hand])}"
   else
-    @message = "Dealer reaches #{calculate_total(session[:dealer_hand])}, and stays"
+    redirect '/game/comparison' if calculate_total(session[:dealer_hand]) > DEALER_HIT_VALUE
+    #@message = "Dealer reaches #{calculate_total(session[:dealer_hand])}, and stays"
   end
   erb :game
 end

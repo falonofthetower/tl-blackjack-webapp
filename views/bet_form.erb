@@ -1,3 +1,4 @@
+<%= erb :messages %>
 <%= session[:name]%>, you have <%= session[:cash] %> left. How much of it will you bet?
 <form action="/bet_form" method="post">
 	<input type="text" name="bet">
