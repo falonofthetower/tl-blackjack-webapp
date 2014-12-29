@@ -3,7 +3,9 @@ require 'rubygems'
 require 'sinatra'
 require 'shotgun'
 
-set :sessions, true
+use Rack::Session::Cookie, :key => 'rack.session',
+                           :path => '/',
+                           :secret => 'brandon.restart' 
 
 DEALER_HIT_VALUE = 17
 BLACKJACK_VALUE = 21
