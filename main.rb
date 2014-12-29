@@ -184,8 +184,7 @@ post '/game/dealer/continue' do
     session[:dealer_hand] << session[:deck].pop 
     @message = "Dealer takes a card, his total is now #{calculate_total(session[:dealer_hand])}"
   else
-    redirect '/game/comparison' if calculate_total(session[:dealer_hand]) > DEALER_HIT_VALUE
-    #@message = "Dealer reaches #{calculate_total(session[:dealer_hand])}, and stays"
+    redirect '/game/comparison' if calculate_total(session[:dealer_hand]) >= DEALER_HIT_VALUE    
   end
   erb :game
 end
