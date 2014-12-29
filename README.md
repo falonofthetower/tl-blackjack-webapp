@@ -9,4 +9,4 @@ The game correctly does the blackjack portion (21 != blackjack | (21 + count == 
 
 You'll note I've moved all the buttons to the bottom--creates minimal mouse movement when operating.
 
-I have now implemented betting, ajax, and improved on the messages. There is more that could be added, but I think it has given me enough of a grasp on TTT that I can move forward.
+I have now implemented betting, ajax, and improved on the messages. There is more that could be added, but I think it has given me enough of a grasp on HTTP that I can move forward.
